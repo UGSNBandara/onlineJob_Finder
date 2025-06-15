@@ -4,6 +4,20 @@ import axios from 'axios';
 // Set base URL for all axios requests
 axios.defaults.baseURL = 'http://localhost:5000';
 
+// Add response interceptor for handling unauthorized requests
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Clear user data and token on unauthorized response
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.reload(); // Reload the page to trigger auth modal
+    }
+    return Promise.reject(error);
+  }
+);
+
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
@@ -11,20 +25,43 @@ export function AuthProvider({ children }) {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Check for existing token and user data in localStorage
-    const token = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    
-    if (token && storedUser) {
-      setUser(JSON.parse(storedUser));
-      setShowAuthModal(false);
-      // Set default auth header
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    } else {
-      setShowAuthModal(true);
+  const validateToken = async (token) => {
+    try {
+      const response = await axios.get('/api/users/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      return null;
     }
-    setLoading(false);
+  };
+
+  useEffect(() => {
+    const initializeAuth = async () => {
+      const token = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
+      
+      if (token && storedUser) {
+        // Validate token and get fresh user data
+        const userData = await validateToken(token);
+        if (userData) {
+          setUser(userData);
+          localStorage.setItem('user', JSON.stringify(userData));
+          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          setShowAuthModal(false);
+        } else {
+          // Token is invalid or expired
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          setShowAuthModal(true);
+        }
+      } else {
+        setShowAuthModal(true);
+      }
+      setLoading(false);
+    };
+
+    initializeAuth();
   }, []);
 
   const login = async (userData, token) => {
@@ -32,7 +69,6 @@ export function AuthProvider({ children }) {
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('token', token);
     setShowAuthModal(false);
-    // Set default auth header
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   };
 
@@ -41,7 +77,6 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     setShowAuthModal(true);
-    // Remove auth header
     delete axios.defaults.headers.common['Authorization'];
   };
 

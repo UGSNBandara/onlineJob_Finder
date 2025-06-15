@@ -58,7 +58,12 @@ const User = sequelize.define('User', {
     type: DataTypes.DATE,
     allowNull: true,
     defaultValue: null
-  }
+  },
+  role: {
+    type: DataTypes.ENUM("applicant", "recruiter"),
+    allowNull: false,
+    defaultValue: "applicant"
+  },
 }, {
   tableName: 'user',
   timestamps: false,

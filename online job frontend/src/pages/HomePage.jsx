@@ -1,39 +1,54 @@
-import { useState } from 'react'
-import PostCard from '../components/PostCard'
+import { Box } from '@mui/material';
+import CreatePostButton from '../components/CreatePostButton';
+import PostCard from '../components/PostCard';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
 function HomePage() {
-  const [posts] = useState([
-    {
-      id: 1,
-      title: 'Software Developer',
-      company: 'Tech Corp',
-      location: 'New York',
-      type: 'Full-time',
-      description: 'Looking for an experienced software developer...',
-      salary: '$80,000 - $100,000',
-      postedAt: '2024-03-15'
-    },
-    {
-      id: 2,
-      title: 'UX Designer',
-      company: 'Design Studio',
-      location: 'Remote',
-      type: 'Contract',
-      description: 'Join our creative team as a UX designer...',
-      salary: '$70,000 - $90,000',
-      postedAt: '2024-03-14'
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchPosts = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('/api/posts');
+      setPosts(response.data.posts);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching posts:', err);
+      setError('Failed to load posts');
+    } finally {
+      setLoading(false);
     }
-  ])
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
 
   return (
-    <div className="home-page">
-      <div className="posts-container">
-        {posts.map(post => (
-          <PostCard key={post.id} post={post} />
-        ))}
-      </div>
-    </div>
-  )
+    <>
+      <Box sx={{ mb: 3 }}>
+        <CreatePostButton />
+      </Box>
+      {error ? (
+        <Box sx={{ p: 2, textAlign: 'center', color: 'error.main' }}>
+          {error}
+        </Box>
+      ) : loading ? (
+        <Box sx={{ p: 2, textAlign: 'center' }}>
+          Loading posts...
+        </Box>
+      ) : (
+        posts.map(post => (
+          <Box key={post.id} sx={{ mb: 2 }}>
+            <PostCard post={post} />
+          </Box>
+        ))
+      )}
+    </>
+  );
 }
 
-export default HomePage 
+export default HomePage; 

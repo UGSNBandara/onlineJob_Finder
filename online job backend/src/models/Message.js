@@ -1,8 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const User = require('./User');
-const Company = require('./Company');
-const Post = require('./Post');
 
 const Message = sequelize.define('Message', {
   id: {
@@ -10,20 +8,15 @@ const Message = sequelize.define('Message', {
     primaryKey: true,
     autoIncrement: true
   },
-  user_id: {
+  sender_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: { model: 'user', key: 'id' }
   },
-  company_id: {
+  receiver_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    references: { model: 'company', key: 'id' }
-  },
-  post_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: { model: 'posts', key: 'id' }
+    references: { model: 'user', key: 'id' }
   },
   message_text: { type: DataTypes.TEXT, allowNull: false },
   created_at: {
@@ -38,9 +31,8 @@ const Message = sequelize.define('Message', {
 
 // Define associations after all models are loaded
 const setupAssociations = () => {
-  Message.belongsTo(User, { foreignKey: 'user_id' });
-  Message.belongsTo(Company, { foreignKey: 'company_id' });
-  Message.belongsTo(Post, { foreignKey: 'post_id' });
+  Message.belongsTo(User, { foreignKey: 'sender_id', as: 'sender' });
+  Message.belongsTo(User, { foreignKey: 'receiver_id', as: 'receiver' });
 };
 
 // Call setupAssociations after all models are loaded

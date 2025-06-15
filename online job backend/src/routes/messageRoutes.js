@@ -1,20 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const messageController = require('../controllers/messageController');
+const authenticateToken = require('../middleware/auth');
 
 // Create a new message
-router.post('/', messageController.createMessage);
+router.post('/', authenticateToken, messageController.createMessage);
 
-// Get all messages
-router.get('/', messageController.getAllMessages);
+// Get all messages for a user
+router.get('/user/:userId', authenticateToken, messageController.getUserMessages);
 
-// Get message by ID
-router.get('/:id', messageController.getMessageById);
+// Get conversation between two users
+router.get('/conversation/:userId1/:userId2', authenticateToken, messageController.getConversation);
 
 // Update message
-router.put('/:id', messageController.updateMessage);
+router.put('/:id', authenticateToken, messageController.updateMessage);
 
 // Delete message
-router.delete('/:id', messageController.deleteMessage);
+router.delete('/:id', authenticateToken, messageController.deleteMessage);
 
 module.exports = router; 

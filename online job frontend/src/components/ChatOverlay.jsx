@@ -33,6 +33,9 @@ function ChatOverlay({ chat, onClose }) {
               <div className="message-content">
                 {message.text}
               </div>
+              <div className="message-timestamp">
+                {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </div>
             </div>
           ))}
         </div>

@@ -8,13 +8,13 @@ import { useAuth } from '../context/AuthContext'
 import AuthModal from '../components/AuthModal'
 
 function MainLayout() {
-  const { selectedChat, showChat, setShowChat } = useMessage()
+  const { selectedChat, showChat, setShowChat } = useMessage()  
   const { isLoggedIn, showAuthModal } = useAuth()
 
   return (
     <div className="main-layout">
-      <div className={`content-wrapper ${!isLoggedIn ? 'blurred' : ''}`}>
-        <Header />
+      <Header />
+      <div className={`content-wrapper ${showAuthModal ? 'blurred' : ''}`}>
         <div className="main-container">
           <aside className="left-sidebar">
             <LeftSidebar />

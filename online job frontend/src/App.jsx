@@ -10,14 +10,14 @@ import MainLayout from './layouts/MainLayout'
 // Pages
 import HomePage from './pages/HomePage'
 import UserProfilePage from './pages/UserProfilePage'
-import CompanyProfilePage from './pages/CompanyProfilePage'
+import UserProfileViewPage from './pages/UserProfileViewPage'
 
 import './styles/auth.css'
 import './App.css'
 
 function App() {
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <MessageProvider>
           <div className="app">
@@ -26,8 +26,8 @@ function App() {
             <Routes>
               <Route path="/" element={<MainLayout />}>
                 <Route index element={<HomePage />} />
-                <Route path="profile/user/:userId" element={<UserProfilePage />} />
-                <Route path="profile/company/:companyId" element={<CompanyProfilePage />} />
+                <Route path="profile" element={<UserProfilePage />} />
+                <Route path="profile/:userId" element={<UserProfileViewPage />} />
               </Route>
             </Routes>
           </div>

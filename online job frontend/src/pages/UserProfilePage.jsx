@@ -91,11 +91,18 @@ const UserProfilePage = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
+      if (!token) {
+        setError('Authentication required. Please login.');
+        return;
+      }
+
+      console.log('Fetching user profile');
       const response = await axios.get(`${API_URL}/users/me`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
+      console.log('Profile response:', response.data);
       const data = response.data;
       setProfile(data);
       setFormData({
@@ -108,8 +115,8 @@ const UserProfilePage = () => {
       });
       setError(null);
     } catch (err) {
-      setError('Failed to load profile. Please try again later.');
       console.error('Error loading profile:', err);
+      setError(err.response?.data?.message || 'Failed to load profile. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -391,6 +398,12 @@ const UserProfilePage = () => {
               <SectionTitle variant="h6">Name</SectionTitle>
               <Typography variant="h5" sx={{ fontWeight: 500 }}>
                 {profile?.firstName} {profile?.lastName}
+              </Typography>
+            </Grid>
+            <Grid item xs={12}>
+              <SectionTitle variant="h6">Role</SectionTitle>
+              <Typography variant="body1" color="primary" sx={{ fontWeight: 500 }}>
+                {profile?.role === 'recruiter' ? 'Recruiter' : 'Job Seeker'}
               </Typography>
             </Grid>
             {profile?.title && (

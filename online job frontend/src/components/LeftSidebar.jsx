@@ -89,35 +89,44 @@ const SkillButton = styled('button')(({ theme }) => ({
 }));
 
 function LeftSidebar() {
-  const { user: authUser } = useAuth()
+  const { user: authUser, isLoggedIn } = useAuth()
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
     const fetchUserProfile = async () => {
+      if (!isLoggedIn) {
+        setLoading(false)
+        return
+      }
+
       try {
         setLoading(true)
-        const token = localStorage.getItem('token')
-        const response = await axios.get('http://localhost:5000/api/users/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
+        const response = await axios.get('/api/users/me')
         setUser(response.data)
         setError(null)
       } catch (err) {
         console.error('Error fetching user profile:', err)
         setError('Failed to load profile')
+        setUser(null)
       } finally {
         setLoading(false)
       }
     }
 
-    if (authUser) {
-      fetchUserProfile()
-    }
-  }, [authUser])
+    fetchUserProfile()
+  }, [isLoggedIn])
+
+  if (!isLoggedIn) {
+    return (
+      <SidebarContainer>
+        <Typography color="text.secondary" align="center">
+          Please log in to view your profile
+        </Typography>
+      </SidebarContainer>
+    )
+  }
 
   if (loading) {
     return (
@@ -142,14 +151,14 @@ function LeftSidebar() {
   return (
     <SidebarContainer>
       <Box display="flex" flexDirection="column" alignItems="center">
-        <Link to={`/profile/user/${user.id}`}>
+        <Link to={"/profile"}>
           <ProfileImage 
             src={user.profileImage} 
             alt={`${user.firstName} ${user.lastName}`} 
           />
         </Link>
         
-        <Link to={`/profile/user/${user.id}`} style={{ textDecoration: 'none' }}>
+        <Link to={"/profile"} style={{ textDecoration: 'none' }}>
           <UserName>
             {`${user.firstName} ${user.lastName}`}
           </UserName>

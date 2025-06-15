@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+import { FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 
 function AuthModal() {
   const { login, showAuthModal } = useAuth();
@@ -9,7 +10,8 @@ function AuthModal() {
     email: '',
     password: '',
     firstName: '',
-    lastName: ''
+    lastName: '',
+    role: 'applicant'
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -31,11 +33,11 @@ function AuthModal() {
       formData.lastName = '';
       formData.email = '';
       formData.password = '';
+      formData.role = 'applicant';
     } catch (err) {
       setError(err.response?.data?.message || 'An error occurred');
     } finally {
       setLoading(false);
-      //setError('');
       setSuccess('');
     }
   };
@@ -65,33 +67,50 @@ function AuthModal() {
 
         <form className="auth-form" onSubmit={handleSubmit}>
           {!isLogin && (
-            <div className="name-fields">
-              <div className="form-group">
-                <label htmlFor="firstName">First Name</label>
-                <input
-                  type="text"
-                  id="firstName"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  required
-                  placeholder="Enter your first name"
-                />
+            <>
+              <div className="name-fields">
+                <div className="form-group">
+                  <label htmlFor="firstName">First Name</label>
+                  <input
+                    type="text"
+                    id="firstName"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    required
+                    placeholder="Enter your first name"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="lastName">Last Name</label>
+                  <input
+                    type="text"
+                    id="lastName"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    required
+                    placeholder="Enter your last name"
+                  />
+                </div>
               </div>
 
               <div className="form-group">
-                <label htmlFor="lastName">Last Name</label>
-                <input
-                  type="text"
-                  id="lastName"
-                  name="lastName"
-                  value={formData.lastName}
+                <label htmlFor="role">I want to register as</label>
+                <select
+                  id="role"
+                  name="role"
+                  value={formData.role}
                   onChange={handleChange}
                   required
-                  placeholder="Enter your last name"
-                />
+                  className="form-control"
+                >
+                  <option value="applicant">Job Seeker</option>
+                  <option value="recruiter">Recruiter</option>
+                </select>
               </div>
-            </div>
+            </>
           )}
 
           <div className="form-group">
