@@ -7,26 +7,26 @@ import {
   Box,
   IconButton,
   Button,
-  Chip,
-  Grid,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import WorkIcon from '@mui/icons-material/Work';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+
+const BACKEND_URL = 'http://localhost:5000';
 
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: '12px',
   boxShadow: '0 2px 12px rgba(0, 0, 0, 0.1)',
   marginBottom: theme.spacing(2),
+  width: '100%',
 }));
 
 const PostImage = styled(CardMedia)({
-  height: 200,
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
+  width: '100%',
+  height: 'auto',
+  objectFit: 'contain',
+  maxWidth: '100%',
 });
 
 const PostContent = styled(CardContent)(({ theme }) => ({
@@ -39,87 +39,67 @@ const PostHeader = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(2),
 }));
 
-const CompanyLogo = styled('img')({
-  width: 48,
-  height: 48,
-  borderRadius: '50%',
-  marginRight: 16,
-});
-
-const InfoChip = styled(Chip)(({ theme }) => ({
-  marginRight: theme.spacing(1),
+const InfoChip = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  color: theme.palette.text.secondary,
   marginBottom: theme.spacing(1),
+  '& svg': {
+    marginRight: theme.spacing(0.5),
+    fontSize: '1rem',
+  },
 }));
 
 function PostCard({ post }) {
   const [liked, setLiked] = useState(false);
-  const [applied, setApplied] = useState(false);
 
   const handleLike = () => {
     setLiked(!liked);
   };
 
-  const handleApply = () => {
-    setApplied(true);
+  // Format date to a readable format
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  // Get full image URL
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return '';
+    return `${BACKEND_URL}${imagePath}`;
   };
 
   return (
     <StyledCard>
-      {post.images && post.images.length > 0 && (
-        <PostImage
-          image={post.images[0]}
-          title={post.title}
-        />
+      {post.image_url && (
+        <Box sx={{ width: '100%', overflow: 'hidden' }}>
+          <PostImage
+            component="img"
+            src={getImageUrl(post.image_url)}
+            alt={post.title}
+          />
+        </Box>
       )}
       <PostContent>
         <PostHeader>
-          <CompanyLogo
-            src={post.company?.logo || '/default_profile.jpg'}
-            alt={post.company?.name || 'Company'}
-          />
           <Box>
             <Typography variant="h6" component="h2">
               {post.title}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {post.company?.name || 'Company Name'}
-            </Typography>
+            <InfoChip>
+              <AccessTimeIcon />
+              <Typography variant="body2">
+                Posted on {formatDate(post.created_at)}
+              </Typography>
+            </InfoChip>
           </Box>
         </PostHeader>
 
-        <Grid container spacing={2} sx={{ mb: 2 }}>
-          <Grid item xs={12} sm={6}>
-            <InfoChip
-              icon={<LocationOnIcon />}
-              label={post.location}
-              variant="outlined"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <InfoChip
-              icon={<WorkIcon />}
-              label={post.job_type}
-              variant="outlined"
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <InfoChip
-              icon={<AttachMoneyIcon />}
-              label={post.salary}
-              variant="outlined"
-            />
-          </Grid>
-        </Grid>
-
         <Typography variant="body1" paragraph>
           {post.description}
-        </Typography>
-
-        <Typography variant="subtitle2" gutterBottom>
-          Requirements:
-        </Typography>
-        <Typography variant="body2" color="text.secondary" paragraph>
-          {post.requirements}
         </Typography>
 
         <Box display="flex" justifyContent="space-between" alignItems="center" mt={2}>
@@ -131,10 +111,8 @@ function PostCard({ post }) {
           <Button
             variant="contained"
             color="primary"
-            onClick={handleApply}
-            disabled={applied}
           >
-            {applied ? 'Applied' : 'Apply Now'}
+            View Details
           </Button>
         </Box>
       </PostContent>
