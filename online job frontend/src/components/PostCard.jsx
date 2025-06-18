@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -7,12 +7,17 @@ import {
   Box,
   IconButton,
   Button,
+  Avatar,
+  CircularProgress,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
+const API_URL = 'http://localhost:5000/api';
 const BACKEND_URL = 'http://localhost:5000';
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -50,11 +55,63 @@ const InfoChip = styled(Box)(({ theme }) => ({
   },
 }));
 
+const UserInfo = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  cursor: 'pointer',
+  '&:hover': {
+    opacity: 0.8,
+  },
+}));
+
+const StyledAvatar = styled(Avatar)(({ theme }) => ({
+  width: 40,
+  height: 40,
+  border: `2px solid ${theme.palette.primary.main}`,
+}));
+
 function PostCard({ post }) {
   const [liked, setLiked] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    loadUserDetails();
+  }, [post.user_id]);
+
+  const loadUserDetails = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('Authentication required');
+        return;
+      }
+
+      const response = await axios.get(`${API_URL}/users/${post.user_id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      setUser(response.data);
+      setError(null);
+    } catch (err) {
+      console.error('Error loading user details:', err);
+      setError('Failed to load user details');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLike = () => {
     setLiked(!liked);
+  };
+
+  const handleProfileClick = () => {
+    navigate(`/profile/${post.user_id}`);
   };
 
   // Format date to a readable format
@@ -69,6 +126,9 @@ function PostCard({ post }) {
   // Get full image URL
   const getImageUrl = (imagePath) => {
     if (!imagePath) return '';
+    // If the image path is already a full URL, return it as is
+    if (imagePath.startsWith('http')) return imagePath;
+    // Otherwise, prepend the backend URL
     return `${BACKEND_URL}${imagePath}`;
   };
 
@@ -85,9 +145,21 @@ function PostCard({ post }) {
       )}
       <PostContent>
         <PostHeader>
+          <Box sx={{ width: '100%' }}>
+            <UserInfo onClick={handleProfileClick}>
+              {loading ? (
+                <CircularProgress size={40} />
+              ) : error ? (
+                <StyledAvatar alt="Error loading profile" />
+              ) : (
+                <StyledAvatar
+                  src={user?.profileImage ? getImageUrl(user.profileImage) : '/default_profile.jpg'}
+                  alt={`${user?.firstName} ${user?.lastName}`}
+                />
+              )}
           <Box>
-            <Typography variant="h6" component="h2">
-              {post.title}
+                <Typography variant="subtitle1" fontWeight="bold">
+                  {loading ? 'Loading...' : error ? 'Error' : `${user?.firstName} ${user?.lastName}`}
             </Typography>
             <InfoChip>
               <AccessTimeIcon />
@@ -95,6 +167,11 @@ function PostCard({ post }) {
                 Posted on {formatDate(post.created_at)}
               </Typography>
             </InfoChip>
+              </Box>
+            </UserInfo>
+            <Typography variant="h6" component="h2" mt={1}>
+              {post.title}
+            </Typography>
           </Box>
         </PostHeader>
 

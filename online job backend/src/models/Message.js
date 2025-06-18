@@ -22,7 +22,11 @@ const Message = sequelize.define('Message', {
   created_at: {
     type: DataTypes.DATE,
     allowNull: false,
-    defaultValue: DataTypes.NOW
+    defaultValue: DataTypes.NOW,
+    get() {
+      const rawValue = this.getDataValue('created_at');
+      return rawValue ? new Date(rawValue).toISOString() : null;
+    }
   }
 }, {
   tableName: 'messages',

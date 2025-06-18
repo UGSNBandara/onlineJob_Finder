@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext'
 import { MessageProvider } from './context/MessageContext'
 import AuthModal from './components/AuthModal'
 import AuthButton from './components/AuthButton'
+import ChatContainer from './components/ChatContainer'
 
 // Layouts
 import MainLayout from './layouts/MainLayout'

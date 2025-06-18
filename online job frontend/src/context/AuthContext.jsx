@@ -12,7 +12,8 @@ axios.interceptors.response.use(
       // Clear user data and token on unauthorized response
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.reload(); // Reload the page to trigger auth modal
+      // Instead of reloading, we'll let the AuthContext handle this
+      window.dispatchEvent(new Event('unauthorized'));
     }
     return Promise.reject(error);
   }
@@ -62,6 +63,15 @@ export function AuthProvider({ children }) {
     };
 
     initializeAuth();
+
+    // Listen for unauthorized events
+    const handleUnauthorized = () => {
+      setUser(null);
+      setShowAuthModal(true);
+    };
+
+    window.addEventListener('unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('unauthorized', handleUnauthorized);
   }, []);
 
   const login = async (userData, token) => {
@@ -79,15 +89,6 @@ export function AuthProvider({ children }) {
     setShowAuthModal(true);
     delete axios.defaults.headers.common['Authorization'];
   };
-
-  // Watch for changes in user and update modal visibility
-  useEffect(() => {
-    if (!user) {
-      setShowAuthModal(true);
-    } else {
-      setShowAuthModal(false);
-    }
-  }, [user]);
 
   if (loading) {
     return null; // or a loading spinner

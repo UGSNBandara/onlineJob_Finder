@@ -10,8 +10,7 @@ const messageController = {
       const message = await Message.create({
         sender_id,
         receiver_id,
-        message_text,
-        created_at: new Date()
+        message_text
       });
       res.status(201).json(message);
     } catch (error) {
